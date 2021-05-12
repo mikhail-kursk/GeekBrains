@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Text.Json;
 using System.IO;
 
 namespace FifthHomeWork
@@ -98,66 +99,225 @@ namespace FifthHomeWork
                         Console.WriteLine("Выберите путь к папке с ToDo листом" + "\n");
                         string path = Console.ReadLine();
 
-                        bool isExist = Directory.Exists(path);
-                        if (!isExist)
+                        ToDoList toDo = new ToDoList("");
+
+                        bool isDirectoryExist = Directory.Exists(path);
+                        if (!isDirectoryExist)
                         {
                             Console.WriteLine("Выбранный путь не существует");
                             break;
                         }
 
-                        Console.WriteLine("Переходим в каталог" + path + "\n");
+                        Console.WriteLine("Переходим в каталог " + path + "\n");
 
-                        if (!(Directory.GetFiles(path, "*.tsk").Length > 1))
-                        {
-                            Console.WriteLine("Не найдено ни одного списка задач");
-                            Console.WriteLine("Для создания нового списка задач введите его имя, для выхода оставьте строку пустой");
-                            var createChoice = Console.ReadLine();
-                            
-                            if (String.IsNullOrEmpty(createChoice)) {return;}
+                        var toDoLists = Directory.GetFiles(path, "*_tsk.json");
+                        int toDoListNameInt = -1;
+                        string toDoListNameString = null;
 
-                            createChoice += ".tsk";
-                            File.Create(path + "\\" + createChoice);
-
-                        }
-                        else
+                        string toDoListName;
+                        if (toDoLists.Length > 0)
                         {
                             Console.WriteLine("Существуюшие списки задач:");
-                            foreach (var taskList in Directory.GetFiles(path, "*.tsk"))
+                            foreach (var taskList in Directory.GetFiles(path, "*_tsk.json"))
                             {
                                 Console.WriteLine(taskList);
                             }
 
+                            Console.WriteLine("\n" + "Для открытия существующего списка задач введите его имя или номер по порядку");
+                            Console.WriteLine("Для создания нового оставьте строку пустой");
 
+                            toDoListName = Console.ReadLine();
+
+                            if (!String.IsNullOrEmpty(toDoListName))
+                            {
+                                try
+                                {
+                                    toDoListNameInt = Convert.ToInt32(toDoListName);
+                                }
+                                catch { }
+
+                                toDoListNameString = path + "\\" + toDoListName;
+
+                                if (toDoListNameInt != -1)
+                                {
+                                    if (0 < toDoListNameInt && toDoListNameInt <= toDoLists.Length)
+                                    {
+                                        Console.WriteLine("Найден по номеру");
+                                        string json = File.ReadAllText(toDoLists[toDoListNameInt - 1]);
+                                        toDo = JsonSerializer.Deserialize<ToDoList>(json);
+                                    }
+                                }
+                                else
+                                {
+                                    foreach (var toDoListNameInToDoList in toDoLists)
+                                    {
+                                        if (toDoListNameInToDoList == toDoListNameString)
+                                        {
+                                            Console.WriteLine("Найден по имени");
+                                            string json = File.ReadAllText(toDoListNameInToDoList);
+                                            toDo = JsonSerializer.Deserialize<ToDoList>(json);
+                                        }
+                                    }
+
+                                }
+
+                                if (String.IsNullOrEmpty(toDo._name))
+                                {
+                                    Console.WriteLine("Выбранный список задач не найден");
+                                    return;
+                                }
+
+
+                            }
+
+                        }
+                        else
+                        {
+                            Console.WriteLine("Не найдено ни одного списка задач");
+                            Console.WriteLine("Для создания нового списка задач введите его имя, для выхода оставьте строку пустой" + "\n");
+
+                            toDoListName = Console.ReadLine();
+
+                            if (String.IsNullOrEmpty(toDoListName))
+                            {
+                                Console.WriteLine("Невозможно создать список задач без имени");
+                                return;
+                            }
+
+                            toDo = new ToDoList(toDoListName);
+                            toDoListNameString = path + "\\" + toDoListName;
                         }
 
 
+                        var exit = true;
 
                         do
                         {
-                            bool exit = false;
-                                                        
+                            Console.Clear();
+                            Console.WriteLine("Открыт список задач " + toDo._name);
+
+                            Console.WriteLine("Выберите операцию над списком задач");
+
+                            Console.WriteLine("1 - изменить имя списка задач");
+
+                            Console.WriteLine("2 - вывести все задачи");
+                            Console.WriteLine("3 - вывести все не выполненные задачи");
+                            Console.WriteLine("4 - вывести все выполненные задачи");
+
+                            Console.WriteLine("5 - создать новую задачу");
+                            Console.WriteLine("6 - изменить описание задачи");
+                            Console.WriteLine("7 - отметить задачу как выполненную");
+                            Console.WriteLine("8 - отметить задачу как не выполненную");
                             
+                            Console.WriteLine("9 - выход" + "\n");
 
 
-                            string name = Console.ReadLine();
+                            int listOptionChoice = 0;
 
-                            ToDoList list1 = new ToDoList(path + name);
+                            try
+                            {
+                                listOptionChoice = Convert.ToInt32(Console.ReadLine());
+                            }
+                            catch
+                            {
+                                Console.WriteLine("Неверный ввод - введите цифру от 1 до 9");
+                                continue;
+                            }
 
-                            list1.NewTask("Задача 1");
+                            int taskNumber = 0;
 
-                            Console.WriteLine(list1.GetActiveTaskList());
-                            list1.ChangeTaskTitle(0, "Задача переименованна");
-                            Console.WriteLine(list1.GetActiveTaskList());
-                            list1.MarkTaskAsDone(0);
+                            Console.WriteLine();
 
-                            Console.WriteLine("Список активных задач");
-                            Console.WriteLine(list1.GetActiveTaskList());
+                            switch (listOptionChoice)
+                            {
+                                case 1:
+                                    Console.WriteLine("Введите новое название списка задач");
+                                    toDo.ChangeToDoListName(Console.ReadLine());
+                                    break;
 
-                            Console.WriteLine("Список выполненных задач");
-                            Console.WriteLine(list1.GetDoneTaskList());
+                                case 2:
+                                    toDo.GetTaskList();
+                                    break;
+
+                                case 3:
+                                    toDo.GetActiveTaskList();
+                                    break;
+
+                                case 4:
+                                    toDo.GetDoneTaskList();
+                                    break;
+
+                                case 5:
+                                    Console.WriteLine("Введите название задачи");
+                                    toDo.NewTask(Console.ReadLine());
+                                    break;
+
+                                case 6:
+                                    Console.WriteLine("Выберите номер задачи для изменения" + "\n");
+
+                                    toDo.GetTaskList();
+
+                                    try
+                                    {
+                                        taskNumber = Convert.ToInt32(Console.ReadLine());
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine("Необходимо ввести номер");
+                                        Console.WriteLine("Возврат в меню");
+                                    }
+
+                                    toDo.ChangeTaskTitle(taskNumber);
+                                    break;
+
+                                case 7:
+                                    Console.WriteLine("Выберите номер задачи для отметки как сделанная" + "\n");
+
+                                    toDo.GetTaskList();
+
+                                    try
+                                    {
+                                        taskNumber = Convert.ToInt32(Console.ReadLine());
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine("Необходимо ввести номер");
+                                        Console.WriteLine("Возврат в меню");
+                                    }
+
+                                    toDo.MarkTaskAsDone(taskNumber);
+                                    break;
+
+                                case 8:
+                                    Console.WriteLine("Выберите номер задачи для отметки как не сделанная" + "\n");
+
+                                    toDo.GetTaskList();
+
+                                    try
+                                    {
+                                        taskNumber = Convert.ToInt32(Console.ReadLine());
+                                    }
+                                    catch
+                                    {
+                                        Console.WriteLine("Необходимо ввести номер");
+                                        Console.WriteLine("Возврат в меню");
+                                    }
+
+                                    toDo.MarkTaskAsNotDone(taskNumber);
+                                    break;
+
+                                case 9:
+                                    exit = false;
+
+                                    File.WriteAllText(toDoListNameString, JsonSerializer.Serialize(toDo));
+                                    break;
+                            }
+
+                            Console.WriteLine("\n" + "Для продолжения нажмите любую кнопку");
+                            Console.ReadLine();
 
 
-                        while (exit)
+                        } while (exit);
 
                         break;
                     }
