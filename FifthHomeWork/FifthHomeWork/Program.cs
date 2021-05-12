@@ -95,11 +95,10 @@ namespace FifthHomeWork
                     {
                         Console.WriteLine("Выбрано задание 5 - ToDo list" + "\n");
 
-                        Console.WriteLine("Выберите путь" + "\n");
-
+                        Console.WriteLine("Выберите путь к папке с ToDo листом" + "\n");
                         string path = Console.ReadLine();
-                        bool isExist = Directory.Exists(path);
 
+                        bool isExist = Directory.Exists(path);
                         if (!isExist)
                         {
                             Console.WriteLine("Выбранный путь не существует");
@@ -107,27 +106,58 @@ namespace FifthHomeWork
                         }
 
                         Console.WriteLine("Переходим в каталог" + path + "\n");
-                        
-                        Console.WriteLine("Введите имя для списка задач");
-                        string name = Console.ReadLine();
 
-                        ToDoList list1 = new ToDoList(path + name);
+                        if (!(Directory.GetFiles(path, "*.tsk").Length > 1))
+                        {
+                            Console.WriteLine("Не найдено ни одного списка задач");
+                            Console.WriteLine("Для создания нового списка задач введите его имя, для выхода оставьте строку пустой");
+                            var createChoice = Console.ReadLine();
+                            
+                            if (String.IsNullOrEmpty(createChoice)) {return;}
 
-                        list1.NewTask("Задача 1");
+                            createChoice += ".tsk";
+                            File.Create(path + "\\" + createChoice);
 
-                        Console.WriteLine(list1.GetActiveTaskList());
-                        list1.ChangeTaskTitle(0, "Задача переименованна");
-                        Console.WriteLine(list1.GetActiveTaskList());
-                        list1.MarkTaskAsDone(0);
-
-                        Console.WriteLine("Список активных задач");
-                        Console.WriteLine(list1.GetActiveTaskList());
-
-                        Console.WriteLine("Список выполненных задач");
-                        Console.WriteLine(list1.GetDoneTaskList());
-
+                        }
+                        else
+                        {
+                            Console.WriteLine("Существуюшие списки задач:");
+                            foreach (var taskList in Directory.GetFiles(path, "*.tsk"))
+                            {
+                                Console.WriteLine(taskList);
+                            }
 
 
+                        }
+
+
+
+                        do
+                        {
+                            bool exit = false;
+                                                        
+                            
+
+
+                            string name = Console.ReadLine();
+
+                            ToDoList list1 = new ToDoList(path + name);
+
+                            list1.NewTask("Задача 1");
+
+                            Console.WriteLine(list1.GetActiveTaskList());
+                            list1.ChangeTaskTitle(0, "Задача переименованна");
+                            Console.WriteLine(list1.GetActiveTaskList());
+                            list1.MarkTaskAsDone(0);
+
+                            Console.WriteLine("Список активных задач");
+                            Console.WriteLine(list1.GetActiveTaskList());
+
+                            Console.WriteLine("Список выполненных задач");
+                            Console.WriteLine(list1.GetDoneTaskList());
+
+
+                        while (exit)
 
                         break;
                     }

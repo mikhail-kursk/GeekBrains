@@ -117,8 +117,8 @@ namespace FifthHomeWork
 
     public class ToDo
     {
-        private string Title;
-        private bool IsDone = false;
+        private string _title;
+        private bool _isDone = false;
 
         public ToDo(string title)
         {
@@ -143,7 +143,7 @@ namespace FifthHomeWork
 
         public string GetTaskNameAndStatusString()
         {
-            return Title + "     " + IsDone;
+            return $"{Title}\t{IsDone}";
         }
 
         public string GetTaskName()
