@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Text.Json;
 using System.IO;
+using System.Collections.Generic;
 
 namespace FifthHomeWork
 {
@@ -12,9 +13,7 @@ namespace FifthHomeWork
             Console.WriteLine("Задание 1 - ввод с клавиатуры с сохранением в файл");
             Console.WriteLine("Задание 2 - дописать текущее время в файл");
             Console.WriteLine("Задание 3 - ввод с клавиатуры и сохранение в бинарный файл");
-            Console.WriteLine("Задание 4 - дерево каталогов с сохранением в файл");
-            Console.WriteLine("Задание 5 - дерево каталогов с сохранением в файл - рекурсия");
-            Console.WriteLine("Задание 6 - ToDo list");
+            Console.WriteLine("Задание 4 - ToDo list");
 
             string choice = Console.ReadLine();
 
@@ -71,35 +70,14 @@ namespace FifthHomeWork
                     }
 
                 case "4":
-                    {
-                        Console.WriteLine("Выбрано задание 4 - дерево каталогов с сохранением в файл" + "\n");
 
-                        Console.WriteLine("Выберите путь");
-
-                        string str1 = Console.ReadLine();
-
-                        bool isExist = Directory.Exists(str1);
-                        
-                        if (!isExist)
-                        {
-                            Console.WriteLine("Выбранный путь не существует");
-                            break;
-                        }    
-
-
-
-
-                        break;
-                    }
-
-                case "6":
                     {
                         Console.WriteLine("Выбрано задание 5 - ToDo list" + "\n");
 
                         Console.WriteLine("Выберите путь к папке с ToDo листом" + "\n");
                         string path = Console.ReadLine();
 
-                        ToDoList toDo = new ToDoList("");
+                        ToDoList toDoList = new ToDoList("");
 
                         bool isDirectoryExist = Directory.Exists(path);
                         if (!isDirectoryExist)
@@ -144,7 +122,7 @@ namespace FifthHomeWork
                                     {
                                         Console.WriteLine("Найден по номеру");
                                         string json = File.ReadAllText(toDoLists[toDoListNameInt - 1]);
-                                        toDo = JsonSerializer.Deserialize<ToDoList>(json);
+                                        toDoList = JsonSerializer.Deserialize<ToDoList>(json);
                                     }
                                 }
                                 else
@@ -155,13 +133,16 @@ namespace FifthHomeWork
                                         {
                                             Console.WriteLine("Найден по имени");
                                             string json = File.ReadAllText(toDoListNameInToDoList);
-                                            toDo = JsonSerializer.Deserialize<ToDoList>(json);
+
+                                            toDoList = JsonSerializer.Deserialize<ToDoList>(json);
+
+
                                         }
                                     }
 
                                 }
 
-                                if (String.IsNullOrEmpty(toDo._name))
+                                if (String.IsNullOrEmpty(toDoList._name))
                                 {
                                     Console.WriteLine("Выбранный список задач не найден");
                                     return;
@@ -174,6 +155,11 @@ namespace FifthHomeWork
                         else
                         {
                             Console.WriteLine("Не найдено ни одного списка задач");
+                        }
+
+
+                        if (String.IsNullOrEmpty(toDoList._name))
+                        {
                             Console.WriteLine("Для создания нового списка задач введите его имя, для выхода оставьте строку пустой" + "\n");
 
                             toDoListName = Console.ReadLine();
@@ -184,17 +170,17 @@ namespace FifthHomeWork
                                 return;
                             }
 
-                            toDo = new ToDoList(toDoListName);
+                            toDoList = new ToDoList(toDoListName);
+                            toDoList.Tasks = new List<ToDo>();
                             toDoListNameString = path + "\\" + toDoListName;
                         }
-
 
                         var exit = true;
 
                         do
                         {
                             Console.Clear();
-                            Console.WriteLine("Открыт список задач " + toDo._name);
+                            Console.WriteLine("Открыт список задач " + toDoList._name);
 
                             Console.WriteLine("Выберите операцию над списком задач");
 
@@ -208,7 +194,7 @@ namespace FifthHomeWork
                             Console.WriteLine("6 - изменить описание задачи");
                             Console.WriteLine("7 - отметить задачу как выполненную");
                             Console.WriteLine("8 - отметить задачу как не выполненную");
-                            
+
                             Console.WriteLine("9 - выход" + "\n");
 
 
@@ -232,30 +218,30 @@ namespace FifthHomeWork
                             {
                                 case 1:
                                     Console.WriteLine("Введите новое название списка задач");
-                                    toDo.ChangeToDoListName(Console.ReadLine());
+                                    toDoList.ChangeToDoListName(Console.ReadLine());
                                     break;
 
                                 case 2:
-                                    toDo.GetTaskList();
+                                    toDoList.GetTaskList();
                                     break;
 
                                 case 3:
-                                    toDo.GetActiveTaskList();
+                                    toDoList.GetActiveTaskList();
                                     break;
 
                                 case 4:
-                                    toDo.GetDoneTaskList();
+                                    toDoList.GetDoneTaskList();
                                     break;
 
                                 case 5:
                                     Console.WriteLine("Введите название задачи");
-                                    toDo.NewTask(Console.ReadLine());
+                                    toDoList.NewTask(Console.ReadLine());
                                     break;
 
                                 case 6:
                                     Console.WriteLine("Выберите номер задачи для изменения" + "\n");
 
-                                    toDo.GetTaskList();
+                                    toDoList.GetTaskList();
 
                                     try
                                     {
@@ -267,13 +253,13 @@ namespace FifthHomeWork
                                         Console.WriteLine("Возврат в меню");
                                     }
 
-                                    toDo.ChangeTaskTitle(taskNumber);
+                                    toDoList.ChangeTaskTitle(taskNumber);
                                     break;
 
                                 case 7:
                                     Console.WriteLine("Выберите номер задачи для отметки как сделанная" + "\n");
 
-                                    toDo.GetTaskList();
+                                    toDoList.GetTaskList();
 
                                     try
                                     {
@@ -285,13 +271,13 @@ namespace FifthHomeWork
                                         Console.WriteLine("Возврат в меню");
                                     }
 
-                                    toDo.MarkTaskAsDone(taskNumber);
+                                    toDoList.MarkTaskAsDone(taskNumber);
                                     break;
 
                                 case 8:
                                     Console.WriteLine("Выберите номер задачи для отметки как не сделанная" + "\n");
 
-                                    toDo.GetTaskList();
+                                    toDoList.GetTaskList();
 
                                     try
                                     {
@@ -303,13 +289,16 @@ namespace FifthHomeWork
                                         Console.WriteLine("Возврат в меню");
                                     }
 
-                                    toDo.MarkTaskAsNotDone(taskNumber);
+                                    toDoList.MarkTaskAsNotDone(taskNumber);
                                     break;
 
                                 case 9:
                                     exit = false;
 
-                                    File.WriteAllText(toDoListNameString, JsonSerializer.Serialize(toDo));
+
+                                    string temp = JsonSerializer.Serialize(toDoList);
+
+                                    File.WriteAllText(toDoListNameString + "_tsk.json", JsonSerializer.Serialize(toDoList));
                                     break;
                             }
 
@@ -331,3 +320,4 @@ namespace FifthHomeWork
         }
     }
 }
+

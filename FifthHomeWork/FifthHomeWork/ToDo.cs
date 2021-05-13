@@ -9,15 +9,21 @@ namespace FifthHomeWork
     public class ToDoList
     {
 
-        public string _name;
-        List<ToDo> Tasks = new List<ToDo> ();
+        public string _name { get; set; }
+        public List<ToDo> Tasks { get; set; }
+
+        public ToDoList()
+        {
+
+        }
 
         public ToDoList(string name)
         {
             _name = name;
+            Tasks = new List<ToDo>();
         }
 
-        public void ChangeToDoListName (string newName)
+        public void ChangeToDoListName(string newName)
         {
             if (String.IsNullOrEmpty(newName))
             {
@@ -29,7 +35,7 @@ namespace FifthHomeWork
             return;
         }
 
-        public void GetTaskList ()
+        public void GetTaskList()
         {
             if (!String.IsNullOrEmpty(_name))
                 if (Tasks.Count > 0)
@@ -40,12 +46,12 @@ namespace FifthHomeWork
                         var result = task.GetTaskNameAndStatus();
                         Console.WriteLine($"{i}\t{result.Item1}\t{result.Item2}");
                         i++;
-                    } 
+                    }
                 }
             return;
         }
 
-        public void GetActiveTaskList ()
+        public void GetActiveTaskList()
         {
             if (Tasks.Count > 0)
             {
@@ -61,7 +67,7 @@ namespace FifthHomeWork
             return;
         }
 
-        public void GetDoneTaskList ()
+        public void GetDoneTaskList()
         {
             if (Tasks.Count > 0)
             {
@@ -74,7 +80,7 @@ namespace FifthHomeWork
                     i++;
                 }
             }
-            return ;
+            return;
         }
 
         public void NewTask(string name)
@@ -93,7 +99,7 @@ namespace FifthHomeWork
 
         public void ChangeTaskTitle(int number)
         {
-            if (number < 1 ||number > Tasks.Count)
+            if (number < 1 || number > Tasks.Count)
             {
                 Console.WriteLine("Нет задачи с таким номером");
                 return;
@@ -108,7 +114,7 @@ namespace FifthHomeWork
                 return;
             }
 
-            bool result = Tasks[number-1].ChangeTitle(newTaskName);
+            bool result = Tasks[number - 1].ChangeTitle(newTaskName);
             if (!result)
             {
                 Console.WriteLine("Не удалось переименовать задачу");
@@ -126,7 +132,7 @@ namespace FifthHomeWork
                 return;
             }
 
-            bool result = Tasks[number-1].MarkTaskAsDone();
+            bool result = Tasks[number - 1].MarkTaskAsDone();
             if (!result)
             {
                 Console.WriteLine("Не удалось изменить статус задачи");
@@ -144,7 +150,7 @@ namespace FifthHomeWork
                 return;
             }
 
-            bool result = Tasks[number-1].MarkTaskAsNotDone();
+            bool result = Tasks[number - 1].MarkTaskAsNotDone();
             if (!result)
             {
                 Console.WriteLine("Не удалось изменить статус задачи");
@@ -154,21 +160,39 @@ namespace FifthHomeWork
             return;
         }
 
+        public void Serialize(string fullName)
+        {
+
+
+            return;
+        }
+
+        public void DeSerialize(int number)
+        {
+
+        }
+
+
 
 
     }
 
     public class ToDo
     {
-        private string _title;
-        private bool _isDone = false;
+        public string _title { get; set; }
+        public bool _isDone { get; set; } = false;
+
+        public ToDo()
+        {
+
+        }
 
         public ToDo(string title)
         {
             _title = title;
         }
 
-        public bool ChangeTitle (string newTitle)
+        public bool ChangeTitle(string newTitle)
         {
             if (!String.IsNullOrEmpty(newTitle))
             {
