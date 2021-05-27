@@ -8,63 +8,45 @@ namespace FileManager
     class Display
     {
 
-        // Default path
-        public static string _path = "C://";
-        public static string _file;
-
         public Display()
         {
         }
 
         public static void RefreshAll()
         {
-            Console.Clear();
-            
+            Console.OutputEncoding = Encoding.UTF8;
 
-            Display.RefreshDirectories();
-            Display.RefreshFileInfo();
-            Display.RefreshConsole();
+            Console.Clear();
+
+
+            FileSystem.ReCollectDirectory();
+            //Display.RefreshDirectories();
+            
+            Console.WriteLine(DisplayForms.GetForm());
+
+            Console.Write(FileManager._currentCommand);
+
         }
 
         private static void RefreshDirectories()
         {
-            //_path
-            List<string> directories = new List<string>();
-            List<string> files = new List<string>();
 
-            foreach (var entity in Directory.GetFileSystemEntries(_path))
-            {
-                if ((File.GetAttributes(entity) & FileAttributes.Directory) == FileAttributes.Directory)
-                    directories.Add(entity);
-                else
-                    files.Add(entity);
-            }
-
-            directories.Sort();
-            files.Sort();
-
-            foreach (var entity in directories)
+            foreach (var entity in FileSystem.directories)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine(entity);
+                if (FileManager._activeWindow == 1)
+                    Console.WriteLine($"\t{entity}");
             }
 
             Console.ResetColor();
 
-            foreach (var entity in files)
+            foreach (var entity in FileSystem.files)
             {
-                Console.WriteLine(entity);
+                if (FileManager._activeWindow == 1)
+                    Console.WriteLine($"\t{entity}");
             }
 
         }
-
-        private static void RefreshFileInfo()
-        {
-            //_file
-        }
-
-        private static void RefreshConsole()
-        { }
 
     }
 }

@@ -10,10 +10,14 @@ namespace FileManager
     {
 
         private string[] _currentFolderObjects;
+        public static int _activeWindow = 0; // 0 - console, 1 - Directories 
+        public static string _currentCommand = "";
 
         public FileManager()
         {
-
+            // Chech app setting and if activeWindow is defined - read it
+            // Chech app setting and if path is defined - read it
+            // Chech app setting and if _currentFolderObjects is defined - read it
         }
 
         public void Process()
@@ -21,60 +25,125 @@ namespace FileManager
             var exit = false;
 
             Display.RefreshAll();
+            //var currentComand;
 
             do
             {
-                string inputCommand = Console.ReadLine();
-                if (String.IsNullOrEmpty(inputCommand))
-                    continue;
+                Display.RefreshAll();
 
-                string[] command = inputCommand.Split(' ');
+                var currentChar = Console.ReadKey();
 
-                switch (command[0].ToLower())
+                if (_activeWindow == 0) // Console
                 {
-                    case "cd":
-                    case "ls":
+                    switch (currentChar.Key)
+                    {
+                        case ConsoleKey.Tab:
+                            _activeWindow = 1;
+                            break;
 
-                        if (command.Length > 1)
-                        {
-                            if (Directory.Exists(command[1]))
-                            {
-                                Display._path = command[1];
-                            }
-                            else
-                                Console.WriteLine("Выбранный путь не найден");
-                        }
-                        else
-                            Console.WriteLine("Пустой путь к директории");
+                        case ConsoleKey.Enter:
+                            IntepritateUserCommand(ref exit);
+                            _currentCommand = "";
+                            break;
 
-                        break;
+                        case ConsoleKey.Backspace:
+                            if (_currentCommand.Length > 0)
+                                _currentCommand = _currentCommand.Substring(0, _currentCommand.Length - 1);
+                            break;
 
-                    case "rm":
-                    case "del":
-                        if (command.Length > 0)
-                        {
+                        default:
+                            _currentCommand += currentChar.KeyChar;
+                            break;
+                    }
+                }
 
-                        }
-                        else
-                            Console.WriteLine("Пустой путь к удаляемому объекту");
+                else if (_activeWindow == 1) // Directories
+                {
+                    switch (currentChar.Key)
+                    {
+                        case ConsoleKey.Tab:
+                            _activeWindow = 0;
+                            break;
 
-                        break;
+                        case ConsoleKey.UpArrow:
+                            FileSystem.TryToSelectAboveElement();
+                            break;
 
-                    case "exit":
-                    case "close":
-                        exit = true;
-                        break;
+                        case ConsoleKey.DownArrow:
+                            FileSystem.TryToSelectBelowElement();
+                            break;
 
-                    default: continue;
+                        case ConsoleKey.PageUp:
+                            FileSystem.TryToPageUp();
+                            break;
+
+                        case ConsoleKey.PageDown:
+                            FileSystem.TryToPageDown();
+                            break;
+
+                        default:
+                            _currentCommand += currentChar.KeyChar;
+                            break;
+                    }
+
 
 
                 }
-
-                Display.RefreshAll();
-
             } while (!exit);
+        }
+
+        public void ReSize()
+        {
+
+        }
+
+        public void IntepritateUserCommand(ref bool exit)
+        {
+            if (String.IsNullOrEmpty(_currentCommand))
+                return;
+
+            string[] command = _currentCommand.Split(' ');
+
+            switch (command[0].ToLower())
+            {
+                case "cd":
+                case "ls":
+
+                    if (command.Length > 1)
+                    {
+                        if (Directory.Exists(command[1]))
+                        {
+                            FileSystem._path = command[1];
+                            DisplayForms._page = 1;
+                        }
+                        else
+                            Console.WriteLine("Выбранный путь не найден");
+                    }
+                    else
+                        Console.WriteLine("Пустой путь к директории");
+
+                    break;
+
+                case "rm":
+                case "del":
+                    if (command.Length > 0)
+                    {
+
+                    }
+                    else
+                        Console.WriteLine("Пустой путь к удаляемому объекту");
+
+                    break;
+
+                case "exit":
+                case "close":
+                    exit = true;
+                    break;
+
+                default: return;
 
 
+            }
         }
     }
 }
