@@ -40,14 +40,14 @@ namespace FileManager
                                    "╠═════════════════════════════════════════════════════════════════════════════════════╦════════════════════════════════╣" +
                                    "║ Folder content                                                                      ║  Additional information        ║" +
                                    "║                                                                                     ║                                ║" +
-                                   "║ " + GetFolderContentWithOffset(1) +       "                                         ║                                ║" +
-                                   "║ " + GetFolderContentWithOffset(2) +       "                                         ║                                ║" +
-                                   "║ " + GetFolderContentWithOffset(3) +       "                                         ║                                ║" +
-                                   "║ " + GetFolderContentWithOffset(4) +       "                                         ║                                ║" +
-                                   "║ " + GetFolderContentWithOffset(5) +       "                                         ║                                ║" +
-                                   "║ " + GetFolderContentWithOffset(6) +       "                                         ║                                ║" +
-                                   "║ " + GetFolderContentWithOffset(7) +       "                                         ║                                ║" +
-                                   "║ " + GetFolderContentWithOffset(8) +       "                                         ║                                ║" +
+                                   "║ " + GetFolderContentWithOffset(1) +       "                                         ║  Attributes:                   ║" +
+                                   "║ " + GetFolderContentWithOffset(2) +       "                                         ║  "+GetAttrWithOffset("atr")+"  ║" +
+                                   "║ " + GetFolderContentWithOffset(3) +       "                                         ║  Extension:                    ║" +
+                                   "║ " + GetFolderContentWithOffset(4) +       "                                         ║  "+GetAttrWithOffset("ext")+"  ║" +
+                                   "║ " + GetFolderContentWithOffset(5) +       "                                         ║  Created:                      ║" +
+                                   "║ " + GetFolderContentWithOffset(6) +       "                                         ║  "+GetAttrWithOffset("cre")+"  ║" +
+                                   "║ " + GetFolderContentWithOffset(7) +       "                                         ║  LastModified:                 ║" +
+                                   "║ " + GetFolderContentWithOffset(8) +       "                                         ║  "+GetAttrWithOffset("lmd")+"  ║" +
                                    "║ " + GetFolderContentWithOffset(9) +       "                                         ║                                ║" +
                                    "║ " + GetFolderContentWithOffset(10) +      "                                         ║                                ║" +
                                    "║ " + GetFolderContentWithOffset(11) +      "                                         ║                                ║" +
@@ -72,23 +72,65 @@ namespace FileManager
         public static string GetFolderContentWithOffset(int line)
         {
             var result = "";
+            var tempResult = "";
+            var isActive = false;
 
             if (line + ((_page - 1) * linePerPage) <= FileSystem.directories.Count)
-                result = FileSystem.directories[line + ((_page - 1) * linePerPage) - 1];
+                tempResult = FileSystem.directories[line + ((_page - 1) * linePerPage) - 1];
 
             if ((line + ((_page - 1) * linePerPage) >= FileSystem.directories.Count + 1) && (line + ((_page - 1) * linePerPage) <= FileSystem.directories.Count + FileSystem.files.Count))
-                result = FileSystem.files[line + ((_page - 1) * linePerPage) - FileSystem.directories.Count - 1];
+                tempResult = FileSystem.files[line + ((_page - 1) * linePerPage) - FileSystem.directories.Count - 1];
+
+            if (tempResult == FileSystem._currentFileOrDirectory)
+                isActive = true;
 
             if (!String.IsNullOrEmpty(result))
-                result = result.Remove(0, FileSystem._path.Length);
+                tempResult = result.Remove(0, FileSystem._path.Length);
 
-            if (result.Length < 43)
-                result = result + new string(' ', 43 - result.Length);
+            if (tempResult.Length < 42)
+                tempResult = tempResult + new string(' ', 42 - tempResult.Length);
 
-            if (result.Length > 43)
-                result = result.Substring(0, 43);
+            if (tempResult.Length > 42)
+                tempResult = tempResult.Substring(0, 42);
+
+            if (isActive)
+                result = ">" + tempResult;
+            else
+                result = " " + tempResult;
 
             return result;
+        }
+
+        public static string GetAttrWithOffset(string attributeName)
+        {
+            var temp = "";
+
+            if (String.IsNullOrEmpty(FileSystem._currentFileOrDirectory))
+                return new string(' ', 28);
+
+            switch (attributeName)
+            {
+                case "atr":
+                    temp = FileSystem._fileAttributes.Attributes.ToString();
+                    break;
+                case "ext":
+                    temp = FileSystem._fileAttributes.Extension.ToString();
+                    break;
+                case "cre":
+                    temp = FileSystem._fileAttributes.CreationTime.ToString();
+                    break;
+                case "lmd":
+                    temp = FileSystem._fileAttributes.LastWriteTime.ToString();
+                    break;
+            }
+
+            if (temp.Length < 28)
+                temp = temp + new string(' ', 28 - temp.Length);
+
+            if (temp.Length > 28)
+                temp = temp.Substring(0, 28);
+
+            return temp;
         }
     }
 }

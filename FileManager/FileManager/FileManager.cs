@@ -115,6 +115,7 @@ namespace FileManager
                         {
                             FileSystem._path = command[1];
                             DisplayForms._page = 1;
+                            FileSystem._currentFileOrDirectory = null;
                         }
                         else
                             Console.WriteLine("Выбранный путь не найден");
@@ -129,6 +130,7 @@ namespace FileManager
                     if (command.Length > 0)
                     {
 
+                        // if current file is deleted select next or previous - FileSystem._currentFileOrDirectory = null;
                     }
                     else
                         Console.WriteLine("Пустой путь к удаляемому объекту");

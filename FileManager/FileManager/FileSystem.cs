@@ -9,10 +9,10 @@ namespace FileManager
     class FileSystem
     {
 
-        public static string _path = "C://Users//m.ivakhnenko//Desktop//Бэкап//Копирование//Документы//snegirsoft.autotests//SeleNet.Interactive.ExchangeApp//bin//Debug//netcoreapp3.1//cs";
+        public static string _path = "C://";
         public static List<string> directories = new List<string>();
         public static List<string> files = new List<string>();
-        public static string _fileAttributes;
+        public static FileInfo _fileAttributes;
         public static string _currentFileOrDirectory = null;
 
         public FileSystem()
@@ -40,6 +40,7 @@ namespace FileManager
         {
             bool isFounded = false;
 
+            // Если раньше не был определен выбираем верхний из доступных
             if (String.IsNullOrEmpty(_currentFileOrDirectory))
             {
                 if (directories.Count > 0)
@@ -48,6 +49,7 @@ namespace FileManager
                     _currentFileOrDirectory = files[0];
             }
 
+            // поиск в файлах
             else
             {
                 for (var i = files.Count; i > 1; i--)
@@ -63,6 +65,7 @@ namespace FileManager
                 }
             }
 
+            // переход с файлов на директории
             if (files.Count > 0)
                 if ((!isFounded) && (files[0].Equals(_currentFileOrDirectory)))
                 {
@@ -73,6 +76,7 @@ namespace FileManager
                     }
                 }
 
+            // поиск в директориях
             if (!isFounded)
             {
                 for (var i = directories.Count; i > 1; i--)
@@ -86,12 +90,16 @@ namespace FileManager
                     }
                 }
             }
+
+            if (!String.IsNullOrEmpty(_currentFileOrDirectory))
+                _fileAttributes = new FileInfo(_currentFileOrDirectory);
         }
 
         public static void TryToSelectBelowElement()
         {
             bool isFounded = false;
 
+            // Если раньше не был определен выбираем самый нижний
             if (String.IsNullOrEmpty(_currentFileOrDirectory))
             {
                 if (files.Count > 0)
@@ -102,6 +110,7 @@ namespace FileManager
 
             else
             {
+                // Ищем в директориях
                 for (var i = 0; i < directories.Count - 1; i++)
                 {
                     var element = directories[i];
@@ -115,6 +124,7 @@ namespace FileManager
 
                 }
 
+                // Переход с директорий в файлы
                 if (directories.Count > 0)
                     if ((!isFounded) && (directories[directories.Count - 1].Equals(_currentFileOrDirectory)))
                     {
@@ -125,6 +135,7 @@ namespace FileManager
                         }
                     }
 
+                // Ищем в файлах
                 if (!isFounded)
                 {
                     for (var i = 0; i < files.Count - 1; i++)
@@ -140,19 +151,27 @@ namespace FileManager
                 }
             }
 
+            if (!String.IsNullOrEmpty(_currentFileOrDirectory))
+                _fileAttributes = new FileInfo(_currentFileOrDirectory);
 
         }
 
         public static void TryToPageUp ()
         {
             if (directories.Count + files.Count > DisplayForms._page * DisplayForms.linePerPage)
+            {
                 DisplayForms._page++;
+                _currentFileOrDirectory = null;
+            }
         }
 
         public static void TryToPageDown()
         {
             if (DisplayForms._page > 1)
+            {
                 DisplayForms._page--;
+                _currentFileOrDirectory = null;
+            }
         }
 
     }
