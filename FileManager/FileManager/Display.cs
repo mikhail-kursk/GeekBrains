@@ -1,6 +1,4 @@
 ﻿using System;
-using System.IO;
-using System.Collections.Generic;
 using System.Text;
 
 namespace FileManager
@@ -15,38 +13,21 @@ namespace FileManager
         public static void RefreshAll()
         {
             Console.OutputEncoding = Encoding.UTF8;
-
             Console.Clear();
 
-
             FileSystem.ReCollectDirectory();
-            //Display.RefreshDirectories();
-            
-            Console.WriteLine(DisplayForms.GetForm());
+            DisplayForms.Display();
 
-            Console.Write(FileManager._currentCommand);
+            if (FileManager._activeWindow == 0)
+            {
+                Console.ForegroundColor = ConsoleColor.Gray;
+                Console.Write("> ");
+            }
+            else
+                Console.ForegroundColor = ConsoleColor.Black;
+
+                Console.Write(FileManager._currentCommand);
 
         }
-
-        private static void RefreshDirectories()
-        {
-
-            foreach (var entity in FileSystem.directories)
-            {
-                Console.ForegroundColor = ConsoleColor.Green;
-                if (FileManager._activeWindow == 1)
-                    Console.WriteLine($"\t{entity}");
-            }
-
-            Console.ResetColor();
-
-            foreach (var entity in FileSystem.files)
-            {
-                if (FileManager._activeWindow == 1)
-                    Console.WriteLine($"\t{entity}");
-            }
-
-        }
-
     }
 }

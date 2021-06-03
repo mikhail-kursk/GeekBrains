@@ -9,8 +9,7 @@ namespace FileManager
     class FileManager
     {
 
-        private string[] _currentFolderObjects;
-        public static int _activeWindow = 0; // 0 - console, 1 - Directories 
+        public static int _activeWindow = 1; // 0 - console, 1 - Directories 
         public static string _currentCommand = "";
 
         public FileManager()
@@ -23,9 +22,6 @@ namespace FileManager
         public void Process()
         {
             var exit = false;
-
-            Display.RefreshAll();
-            //var currentComand;
 
             do
             {
@@ -82,12 +78,8 @@ namespace FileManager
                             break;
 
                         default:
-                            _currentCommand += currentChar.KeyChar;
                             break;
                     }
-
-
-
                 }
             } while (!exit);
         }
