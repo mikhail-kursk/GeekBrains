@@ -16,7 +16,7 @@ namespace FileManager
 
         }
 
-        public static void Display()
+        public static void DisplayFileManager()
         {
             
             string displayedPath;
@@ -26,7 +26,7 @@ namespace FileManager
             else
                 displayedPath = FileSystem._path;
 
-            if (FileManager._activeWindow == 1)
+            if (Worker._activeWindow == 1)
                 defaultColor = ConsoleColor.Gray;
             else
                 defaultColor = ConsoleColor.DarkGray;
@@ -56,7 +56,7 @@ namespace FileManager
                 Console.Write("║ "); PrintFolderContentWithOffset(i); Console.WriteLine("║" + new string(' ', 27) + "║");
             }
 
-            Console.WriteLine("╚" + new string('═', Console.WindowWidth - 30) + "╩" + new string('═', 27) + "╝");
+            Console.WriteLine("╚" + new string('═', ((Console.WindowWidth - 30) / 2) - 2 ) + " Page " + _page + " " + new string('═', Console.WindowWidth - 81) + "╩" + new string('═', 27) + "╝");
             Console.WriteLine();
 
         }
@@ -86,7 +86,7 @@ namespace FileManager
 
             if (isActive)
             {
-                if (FileManager._activeWindow == 1)
+                if (Worker._activeWindow == 1)
                     Console.ForegroundColor = ConsoleColor.Blue;
                 else
                     Console.ForegroundColor = ConsoleColor.DarkBlue;
@@ -101,7 +101,7 @@ namespace FileManager
             }
 
             if ((line + ((_page - 1) * linePerPage) <= FileSystem.lastDirectoriesNumber))
-                if (FileManager._activeWindow == 1)
+                if (Worker._activeWindow == 1)
                     Console.ForegroundColor = ConsoleColor.Green;
                 else
                     Console.ForegroundColor = ConsoleColor.DarkGreen;

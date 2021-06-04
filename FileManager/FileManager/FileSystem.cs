@@ -9,7 +9,7 @@ namespace FileManager
     class FileSystem
     {
 
-        public static string _path = "D://Работа";
+        public static string _path = "C:\\Users\\m.ivakhnenko\\Desktop\\Бэкап\\Копирование\\Рабочий стол";
         public static List<string> directories = new List<string>();
         public static List<string> files = new List<string>();
         public static List<string> dirContent = new List<string>();

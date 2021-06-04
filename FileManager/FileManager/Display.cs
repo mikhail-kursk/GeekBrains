@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Text;
 
 namespace FileManager
 {
@@ -12,21 +11,31 @@ namespace FileManager
 
         public static void RefreshAll()
         {
-            Console.OutputEncoding = Encoding.UTF8;
+            RefreshDirectories();
+            RefreshConsole();
+        }
+
+        public static void RefreshDirectories()
+        {
             Console.Clear();
 
             FileSystem.ReCollectDirectory();
-            DisplayForms.Display();
+            DisplayForms.DisplayFileManager();
 
-            if (FileManager._activeWindow == 0)
-            {
-                Console.ForegroundColor = ConsoleColor.Gray;
-                Console.Write("> ");
-            }
-            else
-                Console.ForegroundColor = ConsoleColor.Black;
+        }
 
-                Console.Write(FileManager._currentCommand);
+        public static void RefreshConsole()
+        {
+
+            int currentLineCursor = Console.CursorTop;
+            Console.SetCursorPosition(0, Console.CursorTop);
+            Console.Write(new string(' ', Console.WindowWidth));
+            Console.SetCursorPosition(0, currentLineCursor);
+
+            Console.ForegroundColor = ConsoleColor.Gray;
+            Console.Write("> ");
+
+            Console.Write(Worker._currentCommand);
 
         }
     }
