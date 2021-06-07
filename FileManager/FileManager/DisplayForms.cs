@@ -56,8 +56,16 @@ namespace FileManager
                 Console.Write("║ "); PrintFolderContentWithOffset(i); Console.WriteLine("║" + new string(' ', 27) + "║");
             }
 
-            Console.WriteLine("╚" + new string('═', ((Console.WindowWidth - 30) / 2) - 2 ) + " Page " + _page + " " + new string('═', Console.WindowWidth - 81) + "╩" + new string('═', 27) + "╝");
+            string pages = " Page " + _page + " / " + ((FileSystem.dirContent.Count / linePerPage) + 1) + " ";
+
+            if (pages.Length < 15)
+                pages += new string('═', 15 - pages.Length);
+
+            Console.WriteLine("╚" + new string('═', ((Console.WindowWidth - 30) / 2) ) + pages + new string('═', Console.WindowWidth - 88) + "╩" + new string('═', 27) + "╝");
             Console.WriteLine();
+
+            Display._consoleLine = Console.CursorTop;
+            Display._consoleLastLine = Console.CursorTop;
 
         }
 

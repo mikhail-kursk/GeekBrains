@@ -5,6 +5,9 @@ namespace FileManager
     class Display
     {
 
+        public static int _consoleLine;
+        public static int _consoleLastLine;
+
         public Display()
         {
         }
@@ -27,15 +30,20 @@ namespace FileManager
         public static void RefreshConsole()
         {
 
-            int currentLineCursor = Console.CursorTop;
-            Console.SetCursorPosition(0, Console.CursorTop);
-            Console.Write(new string(' ', Console.WindowWidth));
-            Console.SetCursorPosition(0, currentLineCursor);
+            for (int i = _consoleLine; i <= _consoleLastLine; i++)
+            {
+
+                Console.SetCursorPosition(0, i);
+                Console.Write(new string(' ', Console.WindowWidth));
+            }
+
+            Console.SetCursorPosition(0, _consoleLine);
 
             Console.ForegroundColor = ConsoleColor.Gray;
             Console.Write("> ");
 
             Console.Write(Worker._currentCommand);
+            _consoleLastLine = Console.CursorTop;
 
         }
     }
