@@ -7,14 +7,11 @@ namespace FileManager
 {
     class DisplayForms
     {
-        public static int _page = 1;  // Сделать свойством которое нельзя выставить меньше чем 10
-        public static int linePerPage = 20;
+        public static int _page; 
+        public static int linePerPage;
         private static ConsoleColor defaultColor;
+        public static List<string> userFriendlyErrors = new List<string>();
 
-        public DisplayForms()
-        {
-
-        }
 
         public static void DisplayFileManager()
         {
@@ -35,7 +32,7 @@ namespace FileManager
 
             // Header
             Console.WriteLine("╔" + new string('═', Console.WindowWidth - 2) + "╗");
-            Console.WriteLine("║" + " Path = " + displayedPath + new string(' ', Console.WindowWidth - FileSystem._path.Length - 31) + DateTime.Now + "  ║");
+            Console.WriteLine("║" + " Path = " + displayedPath + new string(' ', Console.WindowWidth - displayedPath.Length - 31) + DateTime.Now + "  ║");
             Console.WriteLine("╠" + new string('═', Console.WindowWidth - 30) + "╦" + new string('═', 27) + "╣");
             Console.WriteLine("║" + " Folder content" + new string(' ', Console.WindowWidth - 45) + "║" + " Additional information    " + "║");
             Console.WriteLine("║" + new string(' ', Console.WindowWidth - 30) + "║" + new string(' ', 27) + "║");
@@ -61,7 +58,19 @@ namespace FileManager
             if (pages.Length < 15)
                 pages += new string('═', 15 - pages.Length);
 
-            Console.WriteLine("╚" + new string('═', ((Console.WindowWidth - 30) / 2) ) + pages + new string('═', Console.WindowWidth - 88) + "╩" + new string('═', 27) + "╝");
+            Console.WriteLine("╚" + new string('═', ((Console.WindowWidth - 30) / 2) + ((Console.WindowWidth - 30) % 2)) + pages + new string('═', ((Console.WindowWidth - 30) / 2) - 15) + "╩" + new string('═', 27) + "╝");
+            Console.WriteLine();
+
+            foreach (var error in userFriendlyErrors)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine(error);
+            }
+
+            Console.ForegroundColor = defaultColor;
+
+            userFriendlyErrors.Clear();
+
             Console.WriteLine();
 
             Display._consoleLine = Console.CursorTop;
@@ -130,16 +139,44 @@ namespace FileManager
             switch (attributeName)
             {
                 case "atr":
-                    temp = FileSystem._fileAttributes.Attributes.ToString();
+                    try
+                    {
+                        temp = FileSystem._fileAttributes.Attributes.ToString();
+                    }
+                    catch (Exception e)
+                    {
+                        File.AppendAllText(Environment.CurrentDirectory + "\\errors\\app.log", e.ToString() + "\n\n");
+                    }
                     break;
                 case "ext":
-                    temp = FileSystem._fileAttributes.Extension.ToString();
+                    try
+                    {
+                        temp = FileSystem._fileAttributes.Extension.ToString();
+                    }
+                    catch (Exception e)
+                    {
+                        File.AppendAllText(Environment.CurrentDirectory + "\\errors\\app.log", e.ToString() + "\n\n");
+                    }
                     break;
                 case "cre":
-                    temp = FileSystem._fileAttributes.CreationTime.ToString();
+                    try
+                    {
+                        temp = FileSystem._fileAttributes.CreationTime.ToString();
+                    }
+                    catch (Exception e)
+                    {
+                        File.AppendAllText(Environment.CurrentDirectory + "\\errors\\app.log", e.ToString() + "\n\n");
+                    }
                     break;
                 case "lmd":
-                    temp = FileSystem._fileAttributes.LastWriteTime.ToString();
+                    try
+                    {
+                        temp = FileSystem._fileAttributes.LastWriteTime.ToString();
+                    }
+                    catch (Exception e)
+                    {
+                        File.AppendAllText(Environment.CurrentDirectory + "\\errors\\app.log", e.ToString() + "\n\n");
+                    }
                     break;
             }
 

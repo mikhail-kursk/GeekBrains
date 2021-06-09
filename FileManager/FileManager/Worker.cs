@@ -11,17 +11,46 @@ namespace FileManager
 
         public static int _activeWindow = 1; // 0 - console, 1 - Directories 
         public static string _currentCommand = "";
+        public static List<string> previousCommand = new List<string>();
+        public static int numPrevCommand = 0;
 
         public Worker()
         {
-            // Chech app setting and if activeWindow is defined - read it
-            // Chech app setting and if path is defined - read it
-            // Chech app setting and if _currentFolderObjects is defined - read it
+            // Чтение настроек из файла конфигурации
+            SettingIO.TryToReadSetting("path", out var path);
+            FileSystem._path = "C:\\";
+            if (!String.IsNullOrEmpty(path) && (Directory.Exists(path) || File.Exists(path)))
+                FileSystem._path = path;
+
+            SettingIO.TryToReadSetting("currentObject", out var currentObject);
+            FileSystem._currentFileOrDirectory = null;
+            if (!String.IsNullOrEmpty(currentObject) && (File.Exists(currentObject) || Directory.Exists(currentObject)))
+            {
+                FileSystem._currentFileOrDirectory = currentObject;
+                FileSystem._fileAttributes = new FileInfo(FileSystem._currentFileOrDirectory);
+            }
+
+            SettingIO.TryToReadSetting("objectPerPage", out var objectPerPage);
+            DisplayForms.linePerPage = 8;
+            if (!String.IsNullOrEmpty(objectPerPage) && Int32.TryParse(objectPerPage, out int number) && number > 8 && number < 40)
+                DisplayForms.linePerPage = number;
+
+            SettingIO.TryToReadSetting("page", out var page);
+            DisplayForms._page = 1;
+            if (!String.IsNullOrEmpty(page) && Int32.TryParse(page, out int temppage) && temppage > 0)
+                DisplayForms._page = temppage;
+
+            // Check or create catalog for errors
+            if (!Directory.Exists(Environment.CurrentDirectory + "\\errors"))
+                Directory.CreateDirectory(Environment.CurrentDirectory + "\\errors");
         }
 
         public void Process()
         {
             var exit = false;
+
+            Display.RefreshDirectories();
+            Display.RefreshConsole();
 
             do
             {
@@ -43,12 +72,33 @@ namespace FileManager
 
                         case ConsoleKey.Enter:
                             IntepritateUserCommand(ref exit);
+                            previousCommand.Add(_currentCommand);
+                            numPrevCommand = 0;
                             _currentCommand = "";
                             break;
 
                         case ConsoleKey.Backspace:
                             if (_currentCommand.Length > 0)
                                 _currentCommand = _currentCommand.Substring(0, _currentCommand.Length - 1);
+                            break;
+
+                        case ConsoleKey.UpArrow:
+                            if (previousCommand.Count >= numPrevCommand + 1)
+                            {
+                                numPrevCommand++;
+                                _currentCommand = previousCommand[previousCommand.Count - numPrevCommand];
+                            }
+                            break;
+
+                        case ConsoleKey.DownArrow:
+                            if (previousCommand.Count > 0)
+                                if (numPrevCommand > 1)
+                                {
+                                    numPrevCommand--;
+                                    _currentCommand = previousCommand[previousCommand.Count - numPrevCommand];
+                                }
+                                else
+                                    _currentCommand = previousCommand[previousCommand.Count - 1];
                             break;
 
                         default:
@@ -82,11 +132,27 @@ namespace FileManager
                             FileSystem.TryToPageDown();
                             break;
 
+                        case ConsoleKey.Enter:
+                            FileSystem.OpenFileOrDirectory();
+                            break;
+
+                        case ConsoleKey.Backspace:
+                            FileSystem.TryGoUpperDirectory();
+                            break;
+
                         default:
                             break;
                     }
                 }
             } while (!exit);
+
+            // Save current state
+            SettingIO.AddUpdateAppSettings("activeWindow", _activeWindow.ToString());
+            SettingIO.AddUpdateAppSettings("path", FileSystem._path);
+            SettingIO.AddUpdateAppSettings("currentObject", FileSystem._currentFileOrDirectory);
+            SettingIO.AddUpdateAppSettings("objectPerPage", DisplayForms.linePerPage.ToString());
+            SettingIO.AddUpdateAppSettings("page", DisplayForms._page.ToString());
+
         }
 
         public void IntepritateUserCommand(ref bool exit)
@@ -114,7 +180,6 @@ namespace FileManager
                             }
                             else
                             {
-                                //# todo try - catch
                                 string[] path = FileSystem._path.Split('\\', '/');
                                 FileSystem._path = "";
 
@@ -132,10 +197,10 @@ namespace FileManager
                             }
                         }
                         else
-                            Console.WriteLine("Выбранный путь не найден");
+                            DisplayForms.userFriendlyErrors.Add("Выбранный путь не найден");
                     }
                     else
-                        Console.WriteLine("Пустой путь к директории");
+                        DisplayForms.userFriendlyErrors.Add("Пустой путь к директории");
 
                     Display.RefreshAll();
 
@@ -153,28 +218,42 @@ namespace FileManager
                             if (File.Exists(tempPath))
                             {
                                 // Удаление файла   
-                                File.Delete(tempPath);
+                                try
+                                {
+                                    File.Delete(tempPath);
+                                }
+                                catch (Exception e)
+                                {
+                                    File.AppendAllText(Environment.CurrentDirectory + "\\errors\\app.log", e.ToString() + "\n\n");
+                                }
                             }
 
                             if (Directory.Exists(tempPath))
                             {
                                 // рекурсивное удаление папки
-                                DeleteDirectoriesRecursion(tempPath);
-                                Directory.Delete(tempPath);
+                                try
+                                {
+                                    DeleteDirectoriesRecursion(tempPath);
+                                    Directory.Delete(tempPath);
+                                }
+                                catch (Exception e)
+                                {
+                                    File.AppendAllText(Environment.CurrentDirectory + "\\errors\\app.log", e.ToString() + "\n\n");
+                                }
                             }
                             else
                             {
-                                Console.WriteLine("Не корректный путь");
+                                DisplayForms.userFriendlyErrors.Add("Не корректный путь");
                                 break;
                             }
 
                             Display.RefreshDirectories();
 
-                            // if current file is deleted select next or previous - FileSystem._currentFileOrDirectory = null;
+                            // #TODO - if current file is deleted select next or previous - FileSystem._currentFileOrDirectory = null;
                         }
 
                         else
-                            Console.WriteLine("Пустой путь к удаляемому объекту");
+                            DisplayForms.userFriendlyErrors.Add("Пустой путь к удаляемому объекту");
                     }
 
                     break;
@@ -187,8 +266,8 @@ namespace FileManager
                             var tempPath = _currentCommand.Remove(0, 2).TrimStart(' ');
 
                             // Собираем информацию о пути откуда копируем и куда
-                            string SourcePath = "";
-                            string TargetPath = "";
+                            string SourcePath;
+                            string TargetPath;
 
                             if (tempPath.Split(' ').Length == 2)
                             {
@@ -202,19 +281,20 @@ namespace FileManager
                             }
                             else
                             {
-                                Console.WriteLine("Неверная команда, вводите команду в формате cp C:\\source.txt D:\\target.txt для файлов. Для копирования директорий вводите без разрешения");
-                                Console.WriteLine("Если пути содержат пробелы, то указываыйте их в формате cp 'C:\\source.txt' 'D:\\target.txt'");
+                                DisplayForms.userFriendlyErrors.Add("Неверная команда, вводите команду в формате cp C:\\source.txt D:\\target.txt для файлов. Для копирования директорий вводите без разрешения");
+                                DisplayForms.userFriendlyErrors.Add("Если пути содержат пробелы, то указываыйте их в формате cp 'C:\\source.txt' 'D:\\target.txt'");
                                 break;
                             }
 
-                            // Проверить путь откуда копируем
+                            // check source path
 
                             if (!(Directory.Exists(SourcePath) ^ File.Exists(SourcePath)))
                             {
-                                Console.WriteLine("Неверный файл к объекту копирорвания");
+                                DisplayForms.userFriendlyErrors.Add("Неверный путь к объекту копирования");
+                                break;
                             }
 
-                            // Проверить путь куда копируем - существующая директория или создать
+                            // Check and prepare target path
 
                             string[] path = TargetPath.Split('\\', '/');
                             string TargetPathDir = "";
@@ -229,45 +309,48 @@ namespace FileManager
                                 TargetPathDir += path[path.Length - 2];
                             }
                             else
-                                TargetPathDir = path[0] +'\\';
+                                TargetPathDir = path[0] + '\\';
 
-                            // Файл или директория копируется
-                            // #Todo try - catch
 
                             if (File.Exists(SourcePath))
                             {
+                                // Is file - simple copy
                                 if (!(Directory.Exists(TargetPathDir)))
                                     Directory.CreateDirectory(TargetPathDir);
-                                
-                                // #Todo try - catch
-                                File.Copy(SourcePath, TargetPath);
+                                try
+                                {
+                                    File.Copy(SourcePath, TargetPath);
+                                }
+                                catch (Exception e)
+                                {
+                                    File.AppendAllText(Environment.CurrentDirectory + "\\errors\\app.log", e.ToString() + "\n\n");
+                                }
                             }
 
                             else if (Directory.Exists(SourcePath))
                             {
-                                // Директория - рекурсивное копирование
+                                // Is Directory - copy with recursion
                                 DirectoryInfo diSource = new DirectoryInfo(SourcePath);
                                 DirectoryInfo diTarget = new DirectoryInfo(TargetPath);
-                                CopyAllRecursion(diSource, diTarget);
+                                try
+                                {
+                                    CopyAllRecursion(diSource, diTarget);
+                                }
+                                catch (Exception e)
+                                {
+                                    File.AppendAllText(Environment.CurrentDirectory + "\\errors\\app.log", e.ToString() + "\n\n");
+                                }
                             }
                             else
                             {
-                                Console.WriteLine("Не корректный путь");
+                                DisplayForms.userFriendlyErrors.Add("Не корректный путь");
                                 break;
                             }
-
-                            /*
-
-
-
-                            */
                             Display.RefreshDirectories();
-
-                            // if current file is deleted select next or previous - FileSystem._currentFileOrDirectory = null;
                         }
 
                         else
-                            Console.WriteLine("Неверная команда, вводите команду в формате cp C:\\source.txt D:\\target.txt для файлов. Для копирования директорий вводите без разрешения");
+                            DisplayForms.userFriendlyErrors.Add("Неверная команда, вводите команду в формате cp C:\\source.txt D:\\target.txt для файлов. Для копирования директорий вводите без разрешения");
                     }
 
                     break;

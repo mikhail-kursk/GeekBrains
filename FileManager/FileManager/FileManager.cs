@@ -36,7 +36,13 @@ namespace FileManager
                 DeleteMenu(sysMenu, SC_SIZE, MF_BYCOMMAND);
             }
 
-            Console.OutputEncoding = Encoding.UTF8;
+            // Console configuration
+            if (Console.WindowWidth < 60)
+                Console.WindowWidth = 60;
+
+            if (Console.WindowHeight < 30)
+                Console.WindowHeight = 60;
+            
 
             Worker fileManager = new Worker();
             fileManager.Process();

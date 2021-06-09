@@ -2,6 +2,7 @@
 using System.IO;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
 namespace FileManager
 {
@@ -9,7 +10,7 @@ namespace FileManager
     class FileSystem
     {
 
-        public static string _path = "C:\\Users\\m.ivakhnenko\\Desktop\\Бэкап\\Копирование\\Рабочий стол";
+        public static string _path;
         public static List<string> directories = new List<string>();
         public static List<string> files = new List<string>();
         public static List<string> dirContent = new List<string>();
@@ -27,12 +28,19 @@ namespace FileManager
             files.Clear();
             dirContent.Clear();
 
-            foreach (var entity in Directory.GetFileSystemEntries(_path))
+            try
             {
-                if ((File.GetAttributes(entity) & FileAttributes.Directory) == FileAttributes.Directory)
-                    directories.Add(entity);
-                else
-                    files.Add(entity);
+                foreach (var entity in Directory.GetFileSystemEntries(_path))
+                {
+                    if ((File.GetAttributes(entity) & FileAttributes.Directory) == FileAttributes.Directory)
+                        directories.Add(entity);
+                    else
+                        files.Add(entity);
+                }
+            }
+            catch (Exception e)
+            {
+                File.AppendAllText(Environment.CurrentDirectory + "\\errors\\app.log", e.ToString() + "\n\n");
             }
 
             directories.Sort();
@@ -48,7 +56,7 @@ namespace FileManager
         {
 
             // Если раньше не был определен выбираем верхний из доступных
-            if (String.IsNullOrEmpty(_currentFileOrDirectory))
+            if (String.IsNullOrEmpty(_currentFileOrDirectory) && dirContent.Count > 0)
                 _currentFileOrDirectory = dirContent[(DisplayForms._page - 1) * DisplayForms.linePerPage];
 
             else
@@ -69,14 +77,30 @@ namespace FileManager
             }
 
             if (!String.IsNullOrEmpty(_currentFileOrDirectory))
-                _fileAttributes = new FileInfo(_currentFileOrDirectory);
+                try
+                {
+                    _fileAttributes = new FileInfo(_currentFileOrDirectory);
+                }
+                catch (Exception e)
+                {
+                    File.AppendAllText(Environment.CurrentDirectory + "\\errors\\app.log", e.ToString() + "\n\n");
+                }
         }
 
         public static void TryToSelectBelowElement()
         {
             // Если раньше не был определен выбираем самый нижний
-            if (String.IsNullOrEmpty(_currentFileOrDirectory))
-                _currentFileOrDirectory = dirContent[(DisplayForms._page - 1) * DisplayForms.linePerPage + DisplayForms.linePerPage - 1];
+            if (String.IsNullOrEmpty(_currentFileOrDirectory) && dirContent.Count > 0)
+                if (dirContent.Count > DisplayForms.linePerPage)
+                    if (DisplayForms._page - 1 == dirContent.Count / DisplayForms.linePerPage)
+                        // Последняя страница
+                        _currentFileOrDirectory = dirContent[dirContent.Count - 1];
+                    else
+                        // не последняя страница, страниц больше 1
+                        _currentFileOrDirectory = dirContent[(DisplayForms._page - 1) * DisplayForms.linePerPage + DisplayForms.linePerPage - 1];
+                else
+                    // Единственная страница
+                    _currentFileOrDirectory = dirContent[dirContent.Count - 1];
 
             else
             {
@@ -86,7 +110,7 @@ namespace FileManager
 
                     if (element.Equals(_currentFileOrDirectory))
                     {
-                        if (i == ((DisplayForms._page * DisplayForms.linePerPage) - 1 ))
+                        if (i == ((DisplayForms._page * DisplayForms.linePerPage) - 1))
                             TryToPageDown();
 
                         _currentFileOrDirectory = dirContent[i + 1];
@@ -97,7 +121,14 @@ namespace FileManager
             }
 
             if (!String.IsNullOrEmpty(_currentFileOrDirectory))
-                _fileAttributes = new FileInfo(_currentFileOrDirectory);
+                try
+                {
+                    _fileAttributes = new FileInfo(_currentFileOrDirectory);
+                }
+                catch (Exception e)
+                {
+                    File.AppendAllText(Environment.CurrentDirectory + ".log", e.ToString());
+                }
 
         }
 
@@ -112,14 +143,62 @@ namespace FileManager
 
         public static void TryToPageDown()
         {
-            if (directories.Count + files.Count > DisplayForms._page * DisplayForms.linePerPage)
+            if (dirContent.Count > DisplayForms._page * DisplayForms.linePerPage)
             {
                 DisplayForms._page++;
                 _currentFileOrDirectory = null;
             }
         }
 
+        public static void OpenFileOrDirectory()
+        {
+            if (File.Exists(_currentFileOrDirectory))
+            {
+                try
+                {
+                    var p = new Process();
+                    p.StartInfo = new ProcessStartInfo(_currentFileOrDirectory)
+                    {
+                        UseShellExecute = true
+                    };
+                    p.Start();
+                }
+                catch (Exception e)
+                {
+                    File.AppendAllText(Environment.CurrentDirectory + "\\errors\\app.log", e.ToString() + "\n\n");
+                }
+            }
+
+            else if (Directory.Exists(_currentFileOrDirectory))
+            {
+                _path = _currentFileOrDirectory;
+                _currentFileOrDirectory = null;
+                DisplayForms._page = 1;
+            }
+
+
+        }
+
+        public static void TryGoUpperDirectory()
+        {
+            string[] path = FileSystem._path.Split('\\', '/');
+            _path = "";
+
+            if (path.Length > 2)
+            {
+
+                for (int i = 0; i < path.Length - 2; i++)
+                {
+                    _path += path[i] + '\\';
+                }
+                _path += path[path.Length - 2];
+            }
+            else
+                _path = path[0] + '\\';
+
+            _currentFileOrDirectory = null;
+            DisplayForms._page = 1;
+        }
+
     }
-
-
 }
