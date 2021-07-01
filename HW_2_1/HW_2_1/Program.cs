@@ -6,12 +6,26 @@ namespace HW_2_1
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("1 " + isSimple(1));
-            Console.WriteLine("10 " + isSimple(10));
-            Console.WriteLine("7 " + isSimple(7));
-            Console.WriteLine("6 " + isSimple(6));
-            Console.WriteLine("144 " + isSimple(144));
+            Test(1, "Простое");
+            Test(10, "Не простое");
+            Test(7, "Простое");
+            Test(6, "Простое");
+            Test(144, "Простое");
+        }
 
+        static void Test(int number, string value)
+        {
+            if (СheckEqual(isSimple(number), value))
+                Console.WriteLine($"Утверждение, что число {number} {value} - верно");
+            else
+                Console.WriteLine($"Утверждение, что число { number} { value} - не верно");
+        }
+        static bool СheckEqual(string arg1, string arg2)
+        {
+            if (String.Compare(arg1, arg2) >= 0)
+                return true;
+            else
+                return false;
         }
 
         static string isSimple(int n)
