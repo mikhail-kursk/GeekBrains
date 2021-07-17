@@ -44,25 +44,45 @@ namespace HW_2_6
             graph.AddNewBiDirectionalRelatilation(Node_1, Node_3, 4);
             graph.AddNewBiDirectionalRelatilation(Node_1, Node_4, 10);
             graph.AddNewBiDirectionalRelatilation(Node_1, Node_7, 9);
-            
+
             graph.AddNewBiDirectionalRelatilation(Node_2, Node_4, 18);
             graph.AddNewBiDirectionalRelatilation(Node_2, Node_5, 3);
             graph.AddNewBiDirectionalRelatilation(Node_2, Node_6, 1);
             graph.AddNewBiDirectionalRelatilation(Node_2, Node_8, 6);
-            
+
             graph.AddNewBiDirectionalRelatilation(Node_3, Node_9, 15);
-            
+
             graph.AddNewBiDirectionalRelatilation(Node_4, Node_9, 3);
-            
+
             graph.AddNewBiDirectionalRelatilation(Node_5, Node_6, 2);
             graph.AddNewBiDirectionalRelatilation(Node_5, Node_8, 14);
 
             graph.AddNewBiDirectionalRelatilation(Node_7, Node_8, 2);
             graph.AddNewBiDirectionalRelatilation(Node_7, Node_9, 4);
 
-            Console.WriteLine(graph.BFS(Node_1));
-            Console.WriteLine(graph.DFS(Node_1));
 
+            Console.WriteLine("Начинаем обход графа методом BFS, проверяем граф на связность");
+            if (graph.BFS(Node_1) == true)
+            {
+                Console.WriteLine("Обход графа выполнен успеешно, граф связный\n");
+            }
+            else
+            {
+                Console.WriteLine("Обход графа выполнен не успеешно, граф несвязный\n");
+            }
+
+            Console.WriteLine("Начинаем обход графа методом DFS, проверяем граф на связность");
+            if (graph.DFS(Node_1) == true)
+            {
+                Console.WriteLine("Обход графа выполнен успеешно, граф связный\n");
+            }
+            else
+            {
+                Console.WriteLine("Обход графа выполнен не успеешно, граф несвязный\n");
+            }
+
+
+            Console.WriteLine("Начинаем обход графа по алгоритму Дейкстры, ищем кратчайший путь из вершины 4 в верщину 5");
             Console.WriteLine(graph.Dijkstra(Node_4, Node_5));
 
         }
